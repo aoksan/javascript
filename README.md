@@ -1,3 +1,6 @@
 # javascript
 
-https://aoksan.github.io/javascript/todo/
+Merhaba [][todo]
+
+
+[todo]: https://aoksan.github.io/javascript/todo/
