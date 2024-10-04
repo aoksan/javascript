@@ -18,5 +18,3 @@ https://aoksan.github.io/javascript/scopeVar
 https://aoksan.github.io/javascript/switch
 
 https://aoksan.github.io/javascript/todo
-
-https://aoksan.github.io/javascript/variable
