@@ -1,44 +1,138 @@
 // // Selectors
-// const cardbody2 = document.querySelectorAll(".card-body")[1];
-// const todoList = document.querySelector(".list-group");
-// const todos = document.querySelectorAll(".list-group-item");
+const addInput = document.querySelector("#todoName");
+const form = document.querySelector("#todoAddForm");
+const todoList = document.querySelector(".list-group");
+const firstCardBody = document.querySelectorAll(".card-body")[0];
+const secondCardBody = document.querySelectorAll(".card-body")[1];
+const clearButton = document.querySelector("#clearButton");
+const searchInput = document.querySelector("#todoSearch");
 
-// // New Elements
-//     // Element Button
-// const link = document.createElement("a")
-// link.id = "link";
-// link.className = "btn btn-dark btn-sm mt-3";
-// link.innerHTML = "My site";
-// link.href = "#";
-// link.target = "_blank";
+todos = [];
+const todosParsed = JSON.parse(localStorage.getItem("todos"))
 
-//     // Element Todo
-// const todo = document.createElement("li")
-// todo.className = "list-group-item d-flex justify-content-between";
-// todo.innerHTML =  "Merhaba";
+runEvents();
 
-// const deleteTodo = document.createElement("a");
-// deleteTodo.href = "#";
+function runEvents() {
+    form.addEventListener("submit", addTodo);
+    clearButton.addEventListener("click", removeAllTodosFromUI);
+    todoList.addEventListener("click", removeTodoFromUI)
+    searchInput.addEventListener("keyup", searchTodos);
+    document.addEventListener("DOMContentLoaded", reloadTodos)
+}
 
-// const deleteIcon = document.createElement("i");
-// deleteIcon.className = "fa fa-remove";
+function addTodo(e) {
+    e.preventDefault();
+    const inputText = addInput.value.trim();
+    if (inputText == null || inputText == "") {
+        showAlert("warning", "No text avaiable")
+    } else {
+        // UI adding
+        addTodoToUI(inputText);
+        // Straoge adding
+        addTodoToStorage(inputText);
+        showAlert("success", "Todo Added")
+    }
 
-// todo.appendChild(deleteTodo.appendChild(deleteIcon));
+}
 
-//     // Append Final element
-// todoList.appendChild(todo);
+function addTodoToUI(newtodo) {
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between";
+    li.innerHTML = newtodo;
 
-// cardbody2.appendChild(link);
+    const a = document.createElement("a");
+    a.className = "delete-item";
+    a.href = "#";
 
-// console.log(todos);
+    const i = document.createElement("i");
+    i.className = "fa fa-remove";
+    a.appendChild(i);
+    li.appendChild(a);
+    todoList.appendChild(li);
 
+    addInput.value = "";
+}
 
-const todoName = document.querySelector("#todoName")
+function addTodoToStorage(newtodo) {
+    checkTodosFromStorage();
+    todos.push(newtodo)
+    localStorage.setItem("todos", JSON.stringify(todos));
+}
 
-const todo = addEventListener("keyup", )
+function checkTodosFromStorage() {
+    if (localStorage.getItem("todos") === null) {
+        todos = [];
+    } else {
+        todos = JSON.parse(localStorage.getItem("todos"));
+    }
+}
 
+function showAlert(type, message) {
+    const div = document.createElement("div");
+    div.className = `alert alert-${type}`;
+    div.innerHTML = message;
 
+    firstCardBody.appendChild(div)
 
-console.log(todoName.)
+    setTimeout(removeAlert, 2 * 1000)
 
+}
 
+function removeAlert() {
+    firstCardBody.removeChild(firstCardBody.lastElementChild);
+}
+
+function removeTodoFromUI(e) {
+    e.preventDefault();
+    checkTodosFromStorage()
+    const deleteButton = e.target.closest(".delete-item");
+    if (deleteButton) {
+        const todoItem = deleteButton.parentElement; // Get the <li> element
+        const todoText = todoItem.innerText.replace("✖", "").trim(); // Extract the todo text
+
+        // Remove the todo item from the UI
+        todoItem.remove();
+
+        // Remove the todo from the storage
+        todos = todos.filter(todo => todo !== todoText); // Update the todos array
+        localStorage.setItem("todos", JSON.stringify(todos)); // Save the updated array to localStorage
+
+        showAlert("success", "Todo Removed");
+    }
+}
+
+function removeAllTodosFromUI() {
+
+    if (todoList.innerHTML == null || todoList.innerHTML == "") {
+        showAlert("warning", "There is no todo :(")
+    } else {
+        localStorage.removeItem("todos");
+        todoList.innerHTML = "";
+        showAlert("success", "All Todos are deleted");
+    }
+}
+
+function reloadTodos() {
+
+    checkTodosFromStorage()
+    todosParsed.forEach(e => {
+        addTodoToUI(e);
+    });
+}
+
+function searchTodos() {
+    const searchText = searchInput.value.toLowerCase();
+    const todoItems = todoList.getElementsByTagName("li");
+
+    console.log("Search Text:", searchText); // Debugging line
+
+    Array.from(todoItems).forEach(item => {
+        const itemText = item.innerText.toLowerCase();
+        console.log("Item Text:", itemText); // Debugging line
+        if (itemText.includes(searchText)) {
+            item.style.setProperty("display","","important"); // Show the item
+        } else {
+            item.style.setProperty("display","none","important"); // Hide the item
+        }
+    });
+}
