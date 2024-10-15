@@ -6,6 +6,7 @@
 const apiKey = 'e186ad6a3dfd570c47cac2780b4b6d96';
 const submit = $("#CityNameForm");
 const cityInput = $("#cityInput")
+let weatherDataArray = []
 // const
 
 
@@ -15,17 +16,14 @@ function runEvents() {
   submit.on("submit", SubmitForm)
 }
 
-function SubmitForm(e) {
+function SubmitForm(e){
   e.preventDefault();
-  // return city = cityInput.val();
-  const city = cityInput.val();
-  getWeather(city).then((data) => {
-    console.log('data: ', data);
-  })
+  city = cityInput.val();
+  addWeatherDatatoLocalStorage(city)
 }
 
 
-function customWeatherData(city) {
+function addWeatherDatatoLocalStorage(city) {
   getWeather(city).then((data) => {
     const city = data.name
     const date = data.dt
@@ -35,11 +33,42 @@ function customWeatherData(city) {
     const temperature_min = data.main.temp_min
     const temperature_max = data.main.temp_max
     const UTC = data.timezone
-    const LongWeather= data.weather[0].description
-    const Weather= data.weather[0].main
-    const IDWeather= data.weather[0].id
-    const IconWeather= data.weather[0].icon
+    const LongWeather = data.weather[0].description
+    const Weather = data.weather[0].main
+    const IDWeather = data.weather[0].id
+    const IconWeather = data.weather[0].icon
+    // Hello Guys
+    const weatherData = {
+      city,
+      date,
+      sunrise,
+      sunset,
+      temperature,
+      temperature_min,
+      temperature_max,
+      UTC,
+      LongWeather,
+      Weather,
+      IDWeather,
+      IconWeather
+    };
+
+    RetrieveWeatherDataFromLocalStorage(weatherDataArray);
+    // Add the new data to the array
+    weatherDataArray.push(weatherData);
+  
+    // Store the updated array in localStorage
+    localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
+  
+    console.log('Weather data saved to localStorage:', weatherDataArray);
   })
+
+}
+
+
+function RetrieveWeatherDataFromLocalStorage(weatherDataArray) {
+    // Retrieve existing data from localStorage or initialize an empty array if none exists
+    weatherDataArray = JSON.parse(localStorage.getItem("weatherDataArray")) || [];
 }
 
 async function getWeather(timezone) {
