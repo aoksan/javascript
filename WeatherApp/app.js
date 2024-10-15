@@ -17,10 +17,30 @@ function runEvents() {
 
 function SubmitForm(e) {
   e.preventDefault();
+  // return city = cityInput.val();
   const city = cityInput.val();
-  getWeather(city)
+  getWeather(city).then((data) => {
+    console.log('data: ', data);
+  })
 }
 
+
+function customWeatherData(city) {
+  getWeather(city).then((data) => {
+    const city = data.name
+    const date = data.dt
+    const sunrise = data.sys.sunrise
+    const sunset = data.sys.sunset
+    const temperature = data.main.temp
+    const temperature_min = data.main.temp_min
+    const temperature_max = data.main.temp_max
+    const UTC = data.timezone
+    const LongWeather= data.weather[0].description
+    const Weather= data.weather[0].main
+    const IDWeather= data.weather[0].id
+    const IconWeather= data.weather[0].icon
+  })
+}
 
 async function getWeather(timezone) {
   if (!timezone) {
@@ -35,7 +55,7 @@ async function getWeather(timezone) {
     if (geodata) {
       const latitude = geodata.lat;
       const longitude = geodata.lon;
-      getWeatherData(latitude, longitude)
+      return getWeatherData(latitude, longitude)
     } else {
       // todo make it alert
       console.log("No geodata found for the provided city.");
@@ -47,8 +67,8 @@ async function getWeather(timezone) {
 
 async function getWeatherData(latitude, longitude) {
 
-  const weather = await $.getJSON(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}`)
-  console.log('weather  : ', weather);
+  const weather = await $.getJSON(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`)
+  return weather
 
   // if (weather) {
 
