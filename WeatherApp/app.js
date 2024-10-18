@@ -7,8 +7,10 @@ const apiKey = 'e186ad6a3dfd570c47cac2780b4b6d96';
 const submit = $("#CityNameForm");
 const cityInput = $("#cityInput");
 const WeatherSection = $("#results")
+
 let weatherDataArray = []
 let IsCityExists = true
+let tempdata = []
 // const
 
 
@@ -16,20 +18,23 @@ runEvents()
 
 function runEvents() {
     submit.on("submit", SubmitForm)
+    document.addEventListener("DOMContentLoaded", reloadCards())
+
 }
 
 function SubmitForm(e) {
     e.preventDefault();
     city = cityInput.val();
-    addWeatherDatatoLocalStorage(city)
-    CreateWeatherCard()
+    addWeatherDatatoLocalStorageAndUI(city);
+
 }
 
 
-function addWeatherDatatoLocalStorage(city) {
+function addWeatherDatatoLocalStorageAndUI(city) {
     getWeather(city).then((data) => {
         const city = data.name
-        const date = data.dt
+        let dateTime = new Date(data.dt * 1000)
+        const date = dateTime.toLocaleString("en-GB", { month: "2-digit", day: "2-digit" })
         let sunriseTime = new Date(data.sys.sunrise * 1000)
         const sunrise = sunriseTime.toLocaleString("en-GB", { hour: "numeric", minute: "2-digit" });
         let sunsetTime = new Date(data.sys.sunset * 1000)
@@ -57,7 +62,6 @@ function addWeatherDatatoLocalStorage(city) {
             IDWeather,
             IconWeather
         };
-
         RetrieveWeatherDataFromLocalStorage(weatherDataArray);
         // Add the new data to the array
         weatherDataArray.push(weatherData);
@@ -66,6 +70,7 @@ function addWeatherDatatoLocalStorage(city) {
         localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
 
         console.log('Weather data saved to localStorage:', weatherDataArray);
+        CreateWeatherCard();
     })
 
 }
@@ -115,15 +120,14 @@ async function getWeatherData(latitude, longitude) {
 }
 
 // Todo Style
-function CreateWeatherCard() {
+function CreateWeatherCard(weather) {
     weather = RetrieveWeatherDataFromLocalStorage();
     arn = weather.length - 1;
     if (cityInput.val() != "" && IsCityExists != false) {
-
         $(`<div id="status" class="col">
             <div class="card mt-3">
             <div class="card-header text-bg-secondary
-            justify-content-between d-flex">${weather[arn].city} 
+            justify-content-between d-flex">${weather[arn].city} - ${weather[arn].date}
             <button type="button" class="btn-close" disabled aria-label="Close"></button>
             </div>
             <ul class="list-group list-group-flush list-group-item bg-light">
@@ -135,4 +139,22 @@ function CreateWeatherCard() {
     }
 }
 
+
+function reloadCards() {
+    weather = RetrieveWeatherDataFromLocalStorage();
+    weather.forEach(weather => {
+        $(`<div id="status" class="col">
+                <div class="card mt-3">
+                <div class="card-header text-bg-secondary
+                justify-content-between d-flex">${weather.city} - ${weather.date}
+                <button type="button" class="btn-close" disabled aria-label="Close"></button>
+                </div>
+                <ul class="list-group list-group-flush list-group-item bg-light">
+                <li class="list-group-item bg-light">${_.startCase(weather.LongWeather)} - ${weather.temperature}&#8451</li>
+                <li class="list-group-item bg-light">Sunrise: ${weather.sunrise} - Sunset: ${weather.sunset}</li>
+                </ul>
+                </div>
+                </div>`).prependTo(WeatherSection)
+    });
+}
 
