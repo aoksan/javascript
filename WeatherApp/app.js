@@ -6,7 +6,8 @@
 const apiKey = 'e186ad6a3dfd570c47cac2780b4b6d96';
 const submit = $("#CityNameForm");
 const cityInput = $("#cityInput");
-const WeatherSection = $("#results")
+const WeatherSection = $("#results");
+
 
 let weatherDataArray = []
 let IsCityExists = true
@@ -19,14 +20,19 @@ runEvents()
 function runEvents() {
     submit.on("submit", SubmitForm)
     document.addEventListener("DOMContentLoaded", reloadCards())
-
+    // deleteButton.on("click", deleteCard)
+    WeatherSection.on("click", ".btn-close", function() {
+        const card = $(this).closest(".col");
+        const uniqueID = card.attr("id")
+        card.remove()
+        removeWeatherDataFromLocalStorage(uniqueID)
+    });
 }
 
 function SubmitForm(e) {
     e.preventDefault();
     city = cityInput.val();
     addWeatherDatatoLocalStorageAndUI(city);
-
 }
 
 
@@ -47,8 +53,11 @@ function addWeatherDatatoLocalStorageAndUI(city) {
         const Weather = data.weather[0].main
         const IDWeather = data.weather[0].id
         const IconWeather = data.weather[0].icon
+        const uniqueID = `${city}-${date}`; // Or use any other unique identifier
+
         // Hello Guys
         const weatherData = {
+            uniqueID,
             city,
             date,
             sunrise,
@@ -124,11 +133,11 @@ function CreateWeatherCard(weather) {
     weather = RetrieveWeatherDataFromLocalStorage();
     arn = weather.length - 1;
     if (cityInput.val() != "" && IsCityExists != false) {
-        $(`<div id="status" class="col">
+        $(`<div id="${weather.uniqueID}" class="col">
             <div class="card mt-3">
             <div class="card-header text-bg-secondary
-            justify-content-between d-flex">${weather[arn].city} - ${weather[arn].date}
-            <button type="button" class="btn-close" disabled aria-label="Close"></button>
+            justify-content-between d-flex"> <img href="${"https://openweathermap.org/img/wn/" + weather.IconWeather + "@2x.png"}" style="width:24px">${weather[arn].city} - ${weather[arn].date}
+            <button type="button" class="btn-close" aria-label="Close"></button>
             </div>
             <ul class="list-group list-group-flush list-group-item bg-light">
             <li class="list-group-item bg-light">${_.startCase(weather[arn].LongWeather)} - ${weather[arn].temperature}&#8451</li>
@@ -143,14 +152,14 @@ function CreateWeatherCard(weather) {
 function reloadCards() {
     weather = RetrieveWeatherDataFromLocalStorage();
     weather.forEach(weather => {
-        $(`<div id="status" class="col">
-                <div class="card mt-3">
+        $(`<div id="${weather.uniqueID}" class="col">
+                <div class="card mt-3" >
                 <div class="card-header text-bg-secondary
-                justify-content-between d-flex">${weather.city} - ${weather.date}
-                <button type="button" class="btn-close" disabled aria-label="Close"></button>
+                justify-content-between d-flex"><img href="${"https://openweathermap.org/img/wn/" + weather.IconWeather + "@2x.png"}" style="width:24px"> ${weather.city} - ${weather.date}
+                <button type="button" class="btn-close" aria-label="Close"></button>
                 </div>
                 <ul class="list-group list-group-flush list-group-item bg-light">
-                <li class="list-group-item bg-light">${_.startCase(weather.LongWeather)} - ${weather.temperature}&#8451</li>
+                <li class="list-group-item bg-light"> ${_.startCase(weather.LongWeather)} - ${weather.temperature}&#8451</li>
                 <li class="list-group-item bg-light">Sunrise: ${weather.sunrise} - Sunset: ${weather.sunset}</li>
                 </ul>
                 </div>
@@ -158,3 +167,15 @@ function reloadCards() {
     });
 }
 
+function removeWeatherDataFromLocalStorage(uniqueID) {
+    // Retrieve the weather data array from localStorage
+    let weatherDataArray = RetrieveWeatherDataFromLocalStorage();
+
+    // Filter out the data for the unique ID you want to remove
+    weatherDataArray = weatherDataArray.filter(data => data.id !== uniqueID);
+
+    // Save the updated array back to localStorage
+    localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
+
+    console.log(`Weather data for ID ${uniqueID} removed from localStorage`);
+}
