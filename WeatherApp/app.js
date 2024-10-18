@@ -169,10 +169,10 @@ function reloadCards() {
 
 function removeWeatherDataFromLocalStorage(uniqueID) {
     // Retrieve the weather data array from localStorage
-    let weatherDataArray = RetrieveWeatherDataFromLocalStorage();
+    let weather = RetrieveWeatherDataFromLocalStorage();
 
     // Filter out the data for the unique ID you want to remove
-    weatherDataArray = weatherDataArray.filter(data => data.id !== uniqueID);
+    weather = weather.filter(data => data.id !== uniqueID);
 
     // Save the updated array back to localStorage
     localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
