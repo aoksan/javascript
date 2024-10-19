@@ -1,27 +1,22 @@
 // ! Must use Arrow Functions
 // ! Learn reference
 
-
 // API
 const apiKey = 'e186ad6a3dfd570c47cac2780b4b6d96';
 const submit = $("#CityNameForm");
 const cityInput = $("#cityInput");
 const WeatherSection = $("#results");
 
-
 let weatherDataArray = []
 let IsCityExists = true
 let tempdata = []
-// const
-
 
 runEvents()
 
 function runEvents() {
     submit.on("submit", SubmitForm)
-    document.addEventListener("DOMContentLoaded", reloadCards())
-    // deleteButton.on("click", deleteCard)
-    WeatherSection.on("click", ".btn-close", function() {
+    document.addEventListener("DOMContentLoaded", reloadCards)
+    WeatherSection.on("click", ".btn-close", function () {
         const card = $(this).closest(".col");
         const uniqueID = card.attr("id")
         card.remove()
@@ -34,7 +29,6 @@ function SubmitForm(e) {
     city = cityInput.val();
     addWeatherDatatoLocalStorageAndUI(city);
 }
-
 
 function addWeatherDatatoLocalStorageAndUI(city) {
     getWeather(city).then((data) => {
@@ -55,7 +49,6 @@ function addWeatherDatatoLocalStorageAndUI(city) {
         const IconWeather = data.weather[0].icon
         const uniqueID = `${city}-${date}`; // Or use any other unique identifier
 
-        // Hello Guys
         const weatherData = {
             uniqueID,
             city,
@@ -71,7 +64,7 @@ function addWeatherDatatoLocalStorageAndUI(city) {
             IDWeather,
             IconWeather
         };
-        RetrieveWeatherDataFromLocalStorage(weatherDataArray);
+        RetrieveWeatherDataFromLocalStorage();
         // Add the new data to the array
         weatherDataArray.push(weatherData);
 
@@ -79,11 +72,9 @@ function addWeatherDatatoLocalStorageAndUI(city) {
         localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
 
         console.log('Weather data saved to localStorage:', weatherDataArray);
-        CreateWeatherCard();
+        CreateWeatherCard(weatherData);
     })
-
 }
-
 
 function RetrieveWeatherDataFromLocalStorage() {
     // Retrieve existing data from localStorage or initialize an empty array if none exists
@@ -93,8 +84,9 @@ function RetrieveWeatherDataFromLocalStorage() {
 
 async function getWeather(timezone) {
     if (!timezone) {
-        // todo make it alert
         console.log("City name (timezone) is required.");
+        alertCard("warning", "", "City name (timezone) is required.")
+
         return;
     }
 
@@ -106,76 +98,87 @@ async function getWeather(timezone) {
             const longitude = geodata.lon;
             return getWeatherData(latitude, longitude)
         } else {
-            // todo make it alert
             console.log("No geodata found for the provided city.");
+            alertCard("danger", "Data Not Found","No geodata found for the provided city.")
             return IsCityExists = false;
         }
     } catch (error) {
         console.error("Error fetching geodata:", error);
+        alertCard("danger", "", error)
     }
 }
 
 async function getWeatherData(latitude, longitude) {
-
     const weather = await $.getJSON(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`)
     return weather
-
-    // if (weather) {
-
-    // } else {
-    //   // todo make it alert
-    //   console.log("No weather data had been found for the provided city.");
-    // }
 }
 
-// Todo Style
 function CreateWeatherCard(weather) {
-    weather = RetrieveWeatherDataFromLocalStorage();
-    arn = weather.length - 1;
     if (cityInput.val() != "" && IsCityExists != false) {
-        $(`<div id="${weather.uniqueID}" class="col">
-            <div class="card mt-3">
-            <div class="card-header text-bg-secondary
-            justify-content-between d-flex"> <img href="${"https://openweathermap.org/img/wn/" + weather.IconWeather + "@2x.png"}" style="width:24px">${weather[arn].city} - ${weather[arn].date}
-            <button type="button" class="btn-close" aria-label="Close"></button>
-            </div>
-            <ul class="list-group list-group-flush list-group-item bg-light">
-            <li class="list-group-item bg-light">${_.startCase(weather[arn].LongWeather)} - ${weather[arn].temperature}&#8451</li>
-            <li class="list-group-item bg-light">Sunrise: ${weather[arn].sunrise} - Sunset: ${weather[arn].sunset}</li>
-            </ul>
-            </div>
-            </div>`).prependTo(WeatherSection)
+        colCard(weather)
     }
+    alertCard("success", "Card Created", `The weather data created for ${weather.city}`)
 }
-
 
 function reloadCards() {
     weather = RetrieveWeatherDataFromLocalStorage();
     weather.forEach(weather => {
-        $(`<div id="${weather.uniqueID}" class="col">
-                <div class="card mt-3" >
-                <div class="card-header text-bg-secondary
-                justify-content-between d-flex"><img href="${"https://openweathermap.org/img/wn/" + weather.IconWeather + "@2x.png"}" style="width:24px"> ${weather.city} - ${weather.date}
-                <button type="button" class="btn-close" aria-label="Close"></button>
-                </div>
-                <ul class="list-group list-group-flush list-group-item bg-light">
-                <li class="list-group-item bg-light"> ${_.startCase(weather.LongWeather)} - ${weather.temperature}&#8451</li>
-                <li class="list-group-item bg-light">Sunrise: ${weather.sunrise} - Sunset: ${weather.sunset}</li>
-                </ul>
-                </div>
-                </div>`).prependTo(WeatherSection)
+        colCard(weather)
     });
 }
 
+
+// AI
 function removeWeatherDataFromLocalStorage(uniqueID) {
     // Retrieve the weather data array from localStorage
-    let weather = RetrieveWeatherDataFromLocalStorage();
+    let weatherDataArray = RetrieveWeatherDataFromLocalStorage();
 
     // Filter out the data for the unique ID you want to remove
-    weather = weather.filter(data => data.id !== uniqueID);
+    weatherDataArray = weatherDataArray.filter(data => data.uniqueID !== uniqueID);
 
     // Save the updated array back to localStorage
     localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
+    alertCard("warning", "Card Deleted", `The weather data deleted`)
 
     console.log(`Weather data for ID ${uniqueID} removed from localStorage`);
+}
+
+function colCard(weather) {
+    $(`<div id="${weather.uniqueID}" class="col">
+        <div class="card mt-3" >
+        <div class="card-header text-bg-secondary
+        justify-content-between d-flex"><img src="https://openweathermap.org/img/wn/${weather.IconWeather}@2x.png" style="width:24px; margin:0px;"> ${weather.city} - ${weather.date}
+        <button type="button" class="btn-close" aria-label="Close"></button>
+        </div>
+        <ul class="list-group list-group-flush list-group-item bg-light">
+        <li class="list-group-item bg-light"> ${_.startCase(weather.LongWeather)} - ${weather.temperature}&#8451</li>
+        <li class="list-group-item bg-light">Sunrise: ${weather.sunrise} - Sunset: ${weather.sunset}</li>
+        </ul>
+        </div>
+        </div>`).prependTo(WeatherSection)
+}
+
+// AI~
+function alertCard(status, header, text,) {
+    const DISPLAY_TIMEOUT = 0;
+    const REMOVE_TIMEOUT = 5000; // Alert will be removed after 5 seconds
+
+    const alertHtml = `
+      <div class="alert alert-${status} alert-dismissible fade show" role="alert">
+        ${header ? `<h4 class="alert-heading">${header}</h4>` : ''}
+        <p>${text}</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    `;
+
+    setTimeout(() => {
+        const $alert = $(alertHtml).prependTo($("#alerts"));
+
+        // Remove the alert after REMOVE_TIMEOUT
+        setTimeout(() => {
+            $alert.fadeOut(400, function () {
+                $(this).remove();
+            });
+        }, REMOVE_TIMEOUT);
+    }, DISPLAY_TIMEOUT);
 }
